@@ -1,6 +1,8 @@
 import React from "react";
 import Pic from "../assets/pic.png"
 import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion"
+
 
 export default function AmigoCloneUI() {
   const navigate = useNavigate();
@@ -22,15 +24,23 @@ export default function AmigoCloneUI() {
       </header>
 
       <main className="flex flex-col lg:flex-row items-center justify-between px-6 lg:px-20 py-20 gap-12">
-        <div className="flex-1">
+      <motion.div 
+        initial={{opacity: 0, translateX: "-100%"}}
+        whileInView={{opacity: 1, translateX: 0}}
+        transition={{duration: 2}}
+        className="flex-1">
           <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-6">AI FaceSwap Video Chat</h2>
           <p className="text-lg md:text-xl text-slate-300 mb-8">
             Chat, swap faces in real time, and have fun with AI magic in live video calls.
           </p>
           <button className="bg-gradient-to-r from-blue-600 to-cyan-400 px-6 py-3 rounded-full text-white shadow-lg hover:scale-105 transition">Try Demo</button>
-        </div>
+        </motion.div>
 
-        <div className="flex-1">
+        <motion.div 
+        initial={{opacity: 0, translateX: "100%"}}
+        whileInView={{opacity: 1, translateX: 0}}
+        transition={{duration: 2}}
+        className="flex-1">
           <div className="relative w-full max-w-lg z-10">
             <img
               src={Pic}
@@ -38,7 +48,7 @@ export default function AmigoCloneUI() {
               className="w-full max-w-md mx-auto rounded-3xl shadow-xl border border-blue-400"
             />
           </div>
-        </div>
+        </motion.div>
       </main>
 
       <footer className="bg-slate-800 text-center py-6 mt-12 text-sm text-slate-400">
