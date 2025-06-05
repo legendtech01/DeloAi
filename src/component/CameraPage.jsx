@@ -1,42 +1,84 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef, useEffect } from "react";
+import * as tf from "@tensorflow/tfjs";
 
-export default function CameraPage() {
-  const videoRef = useRef(null);
+import * as facemesh from "@tensorflow-models/face-landmarks-detection";
+import Webcam from "react-webcam";
+import { drawMesh } from "./drawUtilities";
 
-  useEffect(() => {
-    async function startCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (error) {
-        console.error("Camera access denied or failed", error);
-      }
+function CameraPage() {
+  const webcamRef = useRef(null);
+  const canvasRef = useRef(null);
+
+  const runFacemesh = async () => {
+
+    const net = await facemesh.load(facemesh.SupportedPackages.mediapipeFacemesh);
+    setInterval(() => {
+      detect(net);
+    }, 10);
+  };
+
+  const detect = async (net) => {
+    if (
+      typeof webcamRef.current !== "undefined" &&
+      webcamRef.current !== null &&
+      webcamRef.current.video.readyState === 4
+    ) {
+
+      const video = webcamRef.current.video;
+      const videoWidth = webcamRef.current.video.videoWidth;
+      const videoHeight = webcamRef.current.video.videoHeight;
+
+      webcamRef.current.video.width = videoWidth;
+      webcamRef.current.video.height = videoHeight;
+
+      canvasRef.current.width = videoWidth;
+      canvasRef.current.height = videoHeight;
+
+      const face = await net.estimateFaces({input:video});
+      console.log(face);
+
+      const ctx = canvasRef.current.getContext("2d");
+      requestAnimationFrame(()=>{drawMesh(face, ctx)});
     }
-    startCamera();
-  }, []);
+  };
+
+  useEffect(()=>{runFacemesh()}, []);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black">
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        className="absolute top-0 left-0 w-full h-full object-cover"
-      />
-      
-      <div className="absolute bottom-0 w-full bg-white bg-opacity-40 rounded-t-2xlshadow-lg py-4 flex justify-between items-center px-6">
-        <button className="flex flex-col items-center text-sm text-[#0c172b]">
-          <p>files</p>
-        </button>
-        <button className= "text-white p-4 rounded-full bg-[#0c172b] shadow-lg">
-          <p>Call</p>
-        </button>
-        <button className="flex flex-col items-center text-sm text-[#0c172b]">
-          <p>swap</p>
-        </button>
-      </div>
+    <div className="App">
+      <header className="App-header">
+        <Webcam
+          ref={webcamRef}
+          style={{
+            position: "absolute",
+            marginLeft: "auto",
+            marginRight: "auto",
+            left: 0,
+            right: 0,
+            textAlign: "center",
+            zindex: 9,
+            width: 640,
+            height: 480,
+          }}
+        />
+
+        <canvas
+          ref={canvasRef}
+          style={{
+            position: "absolute",
+            marginLeft: "auto",
+            marginRight: "auto",
+            left: 0,
+            right: 0,
+            textAlign: "center",
+            zindex: 9,
+            width: 640,
+            height: 480,
+          }}
+        />
+      </header>
     </div>
   );
 }
+
+export default CameraPage;
